@@ -47,10 +47,10 @@
       name: pip
       state: latest
 
-  - name: Install shadowsocks and edit config file
+  - name: Install ss and edit config file
     pip:
       name:
-      - shadowsocks
+      - SxxxxxxS
       - pexpect
 
   - name: Copy the config file to server
