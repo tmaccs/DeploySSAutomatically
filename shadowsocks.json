@@ -1,0 +1,14 @@
+{
+  "server": "0.0.0.0",
+  "local_address": "127.0.0.1",
+  "local_port": 1080,
+  "port_password": {
+    "port1": "ss_password",
+    "port2": "ss_password",
+    "port3": "ss_password",
+    "port4": "ss_password"
+  },
+  "timeout": 300,
+  "method": "aes-256-cfb",
+  "fast_open": false
+}

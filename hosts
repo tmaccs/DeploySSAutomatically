@@ -1,0 +1,6 @@
+[all:vars]
+ansible_user=root
+
+[server]
+SS_server ansible_host=xx.xx.xx.xx ansible_ssh_private_key_file=sshkey/server.key
+

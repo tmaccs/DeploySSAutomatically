@@ -1,0 +1,119 @@
+---
+- hosts: server
+  vars:
+    ss_port1: "{{ port1 | default('1314') }}"
+    ss_port2: "{{ port2 | default('19001') }}"
+    ss_port3: "{{ port3 | default('19002') }}"
+    ss_port4: "{{ port4 | default('19003') }}"
+    username: "{{ username | default('loveuser') }}"
+    password: "{{ password | default('12345676') }}"
+  tasks:
+  - name: Make sure we have a 'wheel' group
+    group:
+      name: wheel
+      state: present
+
+  - name: Allow 'wheel' group to have passwordless sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%wheel'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+  # The user's password must be hash, so we need generate it first
+  - name: Generate passwords
+    shell: python -c 'import crypt; print crypt.crypt("{{ password }}", "$6$random_salt")'
+    register: genpass
+
+  - name: Create user {{ username }}
+    user:
+      name: "{{ username }}"
+      shell: /bin/bash
+      groups: wheel
+      password: "{{ genpass.stdout }}"
+      createhome: yes
+      home: /home/{{ username }}
+      state: present
+
+  - name: Install python-setuptools and wget
+    yum:
+      name:
+      - python-setuptools
+      - wget
+      state: present
+
+  - name: Install pip
+    easy_install:
+      name: pip
+      state: latest
+
+  - name: Install shadowsocks and edit config file
+    pip:
+      name:
+      - shadowsocks
+      - pexpect
+
+  - name: Copy the config file to server
+    copy:
+      src: "shadowsocks.json"
+      dest: "/etc/"
+      mode: 0644
+
+  - name: Set the ports in the config file
+    shell:
+      cmd: |
+        sed -i "s#port1#{{ss_port1}}#" shadowsocks.json
+        sed -i "s#port2#{{ss_port2}}#" shadowsocks.json
+        sed -i "s#port3#{{ss_port3}}#" shadowsocks.json
+        sed -i "s#port4#{{ss_port4}}#" shadowsocks.json
+        sed -i "s#ss_password#{{password}}#" shadowsocks.json
+    args:
+      chdir: "/etc/"
+
+  - name: Open the ports
+    shell:
+      cmd: |
+        firewall-cmd --permanent --add-port="{{ss_port1}}"/tcp
+        firewall-cmd --permanent --add-port="{{ss_port2}}"/tcp
+        firewall-cmd --permanent --add-port="{{ss_port3}}"/tcp
+        firewall-cmd --permanent --add-port="{{ss_port4}}"/tcp
+#  - name: Set the SS starting automatically
+#    shell: echo ssserver -c /etc/shadowsocks.json -d start >> rc.local
+#    args:
+#      chdir: "/etc/"
+  - name: Set the SS starting automatically
+    lineinfile:
+      dest: /etc/rc.local
+      state: present
+      regexp: '^ssserver'
+      line: 'ssserver -c /etc/shadowsocks.json -d start'
+
+  - name: Changing file mod
+    file:
+      path: /etc/rc.local
+      mode: '+x'
+
+  - name: Create downloads directory
+    file:
+      path: "/tmp/{{ username }}/download/"
+      state: directory
+      mode: 0755
+
+  - name: Download Google BBR
+    get_url:
+      url: https://github.com/teddysun/across/raw/master/bbr.sh
+      dest: "/tmp/{{ username }}/download/"
+      mode: 0755
+
+  - name: Install Google BBR
+    expect:
+      command: "/tmp/{{ username }}/download/bbr.sh"
+      responses:
+        # Press any key to start...or Press Ctrl+C to cancel  ? why can't match with ...
+        Press any key to start: ''
+        'Do you want to restart system\? \[y\/n\]': 'n'
+      timeout: null
+      echo: yes
+
+  - name: reboot the server
+    reboot:
