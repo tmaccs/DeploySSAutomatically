@@ -1,4 +1,4 @@
-### Deploying a SS by Ansible, once you deployed, it can start automatically with you server rebooting. Just supporting CentOS now. 
+### Deploying a SS and BBR by Ansible, once you deployed, it can start automatically with you server rebooting. Just supporting CentOS now. 
 
 **1. Create SSH key.**<br>
     Run the command and save the keys under the sshkey folder:
