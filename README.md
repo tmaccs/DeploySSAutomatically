@@ -1,6 +1,6 @@
-### Deploying a SS and BBR by Ansible, once you deployed, it can start automatically with you server rebooting. Just supporting CentOS now. 
+### Deploying SS and BBR by Ansible, once you deployed, it can start automatically with you server rebooting. Just supporting CentOS now. 
 
-**1. Create SSH key.**<br>
+**1. Create SSH keys.**<br>
     Run the command and save the keys under the sshkey folder:
     
         $ ssh-keygen -t rsa 
@@ -9,7 +9,8 @@
 
 **3. Replacing the xx.xx.xx.xx with your server ip at the hosts file.**
 
-**4. Run chmod 400 sshkey/*** 
+**4. Run:**
+        $ chmod 400 sshkey/*
 
 **5. Run the ansible command.**
 - Run the command on your local server with default values:
