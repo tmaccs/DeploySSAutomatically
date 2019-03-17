@@ -10,6 +10,7 @@
 **3. Replacing the xx.xx.xx.xx with your server ip at the hosts file.**
 
 **4. Run:**
+
         $ chmod 400 sshkey/*
 
 **5. Run the ansible command.**
